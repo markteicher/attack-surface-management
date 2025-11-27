@@ -1,0 +1,66 @@
+<dashboard>
+  <label>Tenable ASM - All Assets</label>
+  <description>Overview of all discovered assets via Tenable Attack Surface Management</description>
+  <row>
+    <panel>
+      <title>Total Discovered Assets</title>
+      <single>
+        <search>
+          <query>index=asm_index sourcetype=asm_inventory | stats count as total_assets</query>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Assets by Type</title>
+      <chart>
+        <search>
+          <query>index=asm_index sourcetype=asm_inventory | stats count by asset_type</query>
+        </search>
+        <option name="charting.chart">pie</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>New Assets Over Time</title>
+      <chart>
+        <search>
+          <query>index=asm_index sourcetype=asm_inventory | timechart span=1d count</query>
+        </search>
+        <option name="charting.chart">line</option>
+      </chart>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>All Assets Table (Click to Drill Down)</title>
+      <table>
+        <search>
+          <query>
+            index=asm_index sourcetype=asm_inventory
+            | table _time, domain, ip_address, asset_type, asn, organization, tags
+            | sort -_time
+          </query>
+        </search>
+        <drilldown>
+          <set token="selected_domain">$row.domain$</set>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+
+  <row depends="$selected_domain$">
+    <panel>
+      <title>Drilldown: Asset Details for $selected_domain$</title>
+      <table>
+        <search>
+          <query>
+            index=asm_index sourcetype=asm_inventory domain="$selected_domain$"
+            | table _time, domain, ip_address, asset_type, asn, organization, tags
+          </query>
+        </search>
+      </table>
+    </panel>
+  </row>
+</dashboard>
